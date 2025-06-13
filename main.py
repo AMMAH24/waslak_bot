@@ -60,7 +60,7 @@ async def confirm_sale(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Sale recorded.\nReferrals: {data[ref_code]['count']}\nCommission: {data[ref_code]['commission']} MRU")
 
 async def withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [["1. Bankily", "2. Saddad", "3. Bank Transfer"]]
+    keyboard = [["1. Bankily", "2. Sedad", "3. Maservi"]]
     markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
     await update.message.reply_text("Select withdrawal method:", reply_markup=markup)
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     app.add_handler(CommandHandler("mybalance", balance))
     app.add_handler(CommandHandler("confirm_sale", confirm_sale))
     app.add_handler(CommandHandler("withdraw", withdraw))
-    app.add_handler(MessageHandler(filters.Regex("^(1\. Bankily|2\. Saddad|3\. Bank Transfer)$"), handle_withdraw_choice))
+    app.add_handler(MessageHandler(filters.Regex("^(1\. Bankily|2\. Sedad|3\. Maservi)$"), handle_withdraw_choice))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_account_number))
     print("Bot is running...")
     app.run_polling()
