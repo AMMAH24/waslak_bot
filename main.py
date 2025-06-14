@@ -152,13 +152,18 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     if isinstance(update, Update) and update.message:
         await update.message.reply_text("❌ حصل خطأ غير متوقع. سيتم إصلاحه.")
 
-# Webhook endpoint
+# Webhook endpoint (POST)
 @fastapi_app.post("/")
 async def webhook(req: Request):
     data = await req.json()
     update = Update.de_json(data, telegram_app.bot)
     await telegram_app.process_update(update)
     return {"status": "ok"}
+
+# GET endpoint for browser
+@fastapi_app.get("/")
+async def root():
+    return {"message": "✅ Waslak bot is running"}
 
 # Start everything
 if __name__ == '__main__':
