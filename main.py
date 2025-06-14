@@ -6,7 +6,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from fastapi import FastAPI, Request
 import uvicorn
 
-
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -164,6 +163,7 @@ async def webhook(req: Request):
 # Start everything
 if __name__ == '__main__':
     import asyncio
+
     async def main():
         global telegram_app
         telegram_app = ApplicationBuilder().token(TOKEN).build()
@@ -178,6 +178,9 @@ if __name__ == '__main__':
         await telegram_app.bot.set_webhook(WEBHOOK_URL)
 
         print(f"✅ Webhook set to: {WEBHOOK_URL}")
-        uvicorn.run("main:fastapi_app", host="0.0.0.0", port=PORT)
+
+        config = uvicorn.Config("main:fastapi_app", host="0.0.0.0", port=PORT, log_level="info")
+        server = uvicorn.Server(config)
+        await server.serve()
 
     asyncio.run(main())
