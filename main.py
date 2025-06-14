@@ -166,7 +166,7 @@ if __name__ == '__main__':
 
     async def main():
         global telegram_app
-        telegram_app = ApplicationBuilder().token(TOKEN).build()
+        telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
         telegram_app.add_handler(CommandHandler("mybalance", balance))
         telegram_app.add_handler(CommandHandler("confirm_sale", confirm_sale))
