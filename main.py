@@ -133,6 +133,12 @@ async def set_commission(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data[code]["commission"] = new_amount
     save_data(data)
     await update.message.reply_text(f"✅ تم تعيين العمولة إلى {new_amount} MRU لـ {code}.")
+    
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
+    print(f"حدث استثناء: {context.error}")
+    # خيار إضافي: أرسل الخطأ للمشرف في تيليغرام
+    if isinstance(update, Update) and update.message:
+        await update.message.reply_text("❌ حصل خطأ غير متوقع. سيتم إصلاحه قريباً.")
 
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
@@ -141,5 +147,7 @@ if __name__ == '__main__':
     app.add_handler(CommandHandler("cancel_sale", cancel_sale))
     app.add_handler(CommandHandler("check", check_ref))
     app.add_handler(CommandHandler("set_commission", set_commission))
+    app.add_error_handler(error_handler)
+
     print("✅ Bot is running...")
     app.run_polling()
