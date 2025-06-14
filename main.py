@@ -6,21 +6,21 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from fastapi import FastAPI, Request
 import uvicorn
 
+# تحميل المتغيرات من .env
 load_dotenv()
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-PORT = int(os.getenv("PORT", 8000))  # Render يمرر المتغير تلقائيًا
+PORT = int(os.getenv("PORT", 8000))
 
 COMMISSION_RATE = 0.25
 DATA_FILE = 'referrals.json'
 
-# Telegram application and FastAPI instance
-telegram_app = None
+# إنشاء تطبيق FastAPI وتطبيق Telegram
 fastapi_app = FastAPI()
+telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Load and save referral data
+# تحميل البيانات من ملف JSON
 def load_data():
     try:
         with open(DATA_FILE, 'r') as f:
@@ -28,11 +28,12 @@ def load_data():
     except FileNotFoundError:
         return {}
 
+# حفظ البيانات في ملف JSON
 def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=4)
 
-# Telegram command handlers
+# أوامر البوت
 async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) < 1:
         await update.message.reply_text("استخدم:\n/mybalance <رمز_الإحالة>")
@@ -146,13 +147,21 @@ async def set_commission(update: Update, context: ContextTypes.DEFAULT_TYPE):
     save_data(data)
     await update.message.reply_text(f"✅ تم تعيين العمولة إلى {new_amount} MRU لـ {code}.")
 
-# Error handler
+# التعامل مع الأخطاء
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     print(f"حدث خطأ: {context.error}")
     if isinstance(update, Update) and update.message:
         await update.message.reply_text("❌ حصل خطأ غير متوقع. سيتم إصلاحه.")
 
-# Webhook endpoint (POST)
+# إضافة الأوامر والأخطاء للبوت
+telegram_app.add_handler(CommandHandler("mybalance", balance))
+telegram_app.add_handler(CommandHandler("confirm_sale", confirm_sale))
+telegram_app.add_handler(CommandHandler("cancel_sale", cancel_sale))
+telegram_app.add_handler(CommandHandler("check", check_ref))
+telegram_app.add_handler(CommandHandler("set_commission", set_commission))
+telegram_app.add_error_handler(error_handler)
+
+# Webhook (POST من تيليجرام)
 @fastapi_app.post("/")
 async def webhook(req: Request):
     data = await req.json()
@@ -160,28 +169,17 @@ async def webhook(req: Request):
     await telegram_app.process_update(update)
     return {"status": "ok"}
 
-# GET endpoint for browser
+# اختبار GET
 @fastapi_app.get("/")
 async def root():
     return {"message": "✅ Waslak bot is running"}
 
-# Start everything
+# بدء التشغيل مع تعيين Webhook
 if __name__ == '__main__':
     import asyncio
 
     async def main():
-        global telegram_app
-        telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
-
-        telegram_app.add_handler(CommandHandler("mybalance", balance))
-        telegram_app.add_handler(CommandHandler("confirm_sale", confirm_sale))
-        telegram_app.add_handler(CommandHandler("cancel_sale", cancel_sale))
-        telegram_app.add_handler(CommandHandler("check", check_ref))
-        telegram_app.add_handler(CommandHandler("set_commission", set_commission))
-        telegram_app.add_error_handler(error_handler)
-
         await telegram_app.bot.set_webhook(WEBHOOK_URL)
-
         print(f"✅ Webhook set to: {WEBHOOK_URL}")
 
         config = uvicorn.Config("main:fastapi_app", host="0.0.0.0", port=PORT, log_level="info")
