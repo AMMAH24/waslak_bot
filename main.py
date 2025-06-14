@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from fastapi import FastAPI, Request
 import uvicorn
-import asyncio
+
 
 load_dotenv()
 
@@ -163,6 +163,7 @@ async def webhook(req: Request):
 
 # Start everything
 if __name__ == '__main__':
+    import asyncio
     async def main():
         global telegram_app
         telegram_app = ApplicationBuilder().token(TOKEN).build()
